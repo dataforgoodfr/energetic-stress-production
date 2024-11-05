@@ -8,13 +8,14 @@ from django.db import models
 """
 
 class Prediction(models.Model):
-    """Point de donnée issue de la regression lineaire."""
-    class TypeDePrediction(models.TextChoices):
+    """Point de donnée issue d'une prediction."""
+
+    class TypeDeProduction(models.TextChoices):
         """Label des type de prediction."""
         EOLIEN = "Point de prediction eolien"
         SOLAIR = "Point de prediction solair"
 
-    label = models.CharField(choices=TypeDePrediction)
+    label = models.CharField(choices=TypeDeProduction)
     date = models.DateTimeField(
         default=django.utils.timezone.now(),
         blank=False,
