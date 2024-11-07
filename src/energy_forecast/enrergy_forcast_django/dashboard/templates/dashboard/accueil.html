@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+    {% load static %}
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Prévision ENR</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
+<body class="container">
+    <h1>🌞Calendier des jours Tempo❄️</h1>
+    <p>Voici le calendrier des jours Tempo prédits par notre modèle et les jours Tempo réels selectionés par RTE.</p>
+    <h3>Tableau des prévisions et des valeurs réelles</h3>
+    <div>{{ styled_table_df|safe }}</div>
+
+    <h2>Comment ça marche?</h2>
+    <p>Cette application est une démonstration d'une prévision énergétique simple.</p>
+    <p>Il est divisé en trois sections:</p>
+    <ul>
+        <li><a href="Météo" target="_self">Prévision météo</a> : analyse les prévision météo</li>
+        <li><a href="Production" target="_self">Prévision de production électrique</a>: utilise la prévision météo pour estimer la production éolienne et solaire</li>
+        <li><a href="Consommation" target="_self">Prévision de consommation</a>: récupère les données de consommation prévue par RTE</li>
+        <li>Une fois la prévision de production et de consommation obtenue, la <a href="#2b45dae7" target="_self">prévision Tempo</a> est calculée.</li>
+    </ul>
+
+    {% comment %} <h2>Souscrire à notre newsletter</h2>
+    <p>Ce projet est encore en développement et nous ajoutons de nouvelles fonctionnalités régulièrement.</p>
+    <p>Vous voulez être informé des nouvelles fonctionnalités de cette application? Remplissez le formulaire ci-dessous pour vous inscrire à notre newsletter.</p>
+    <form method="post">
+        {% csrf_token %}
+        <label for="email">Votre adresse email</label>
+        <input type="email" id="email" name="email">
+        <br>
+        <input type="checkbox" id="rgpd" name="rgpd">
+        <label for="rgpd">J'accepte que mes données soient utilisées pour m'envoyer des emails d'information (promis, pas de spams). Aucune donnée ne sera partagée avec des tiers. Vous pouvez vous désinscrire à tout moment. Aucune publicité ne vous sera envoyée (parce que personne n'aime ça). Les données seront stockées de manière sécurisée (si bien qu'il est probable qu'on en perde nous même l'accès).</label>
+        <br>
+        <button type="submit">Souscrire</button>
+    </form>
+    {% if success %}
+        <p style="color: green;">{{ success }}</p>
+    {% endif %}
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %} {% endcomment %}
+
+    <h2>Contact</h2>
+    <p>Pour toute question ou suggestion, n'hésitez pas à nous contacter à l'adresse suivante: contact@antoinetavant.fr</p>
+</body>
+</html>

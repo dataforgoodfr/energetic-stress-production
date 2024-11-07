@@ -51,7 +51,7 @@ class TempoSignalAPI(RTEAPROAuth2):
         req = self.fetch_response(params)
         try:
             data =  pd.DataFrame(req.json()["tempo_like_calendars"]["values"]).set_index("start_date")
-            data.index = pd.to_datetime(data.index)
+            data.index = pd.to_datetime(data.index, utc=True)
             data["end_date"] = pd.to_datetime(data["end_date"])
             data["updated_date"] = pd.to_datetime(data["updated_date"])
             return data

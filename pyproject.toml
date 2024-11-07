@@ -42,6 +42,7 @@ dependencies = [
   "bokeh>=3.4",
   "joblib",
   "python-dotenv",
+  "django==5.1.2",
 ]
 
 [project.urls]
