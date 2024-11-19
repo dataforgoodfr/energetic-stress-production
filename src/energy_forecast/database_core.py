@@ -69,13 +69,11 @@ def add_the_csv_predictions(path_to_csv):
 def select_last_n_days(n_days):
     engine = sa.create_engine(URL_DB)
     with engine.connect() as connection:
-        query = sa.select(tempo_classification).order_by(sa.desc(tempo_classification.c.date)).limit(n_days)
+        query = sa.select([tempo_classification]).order_by(sa.desc(tempo_classification.c.date)).limit(n_days).
         print(query)
         result = connection.execute(query)
         results = result.fetchall()
-        df = pd.DataFrame(results, columns=result.keys())
-        df.set_index('date', inplace=True)  # Set the date as the index
-        return df
+        return pd.DataFrame(results, columns=result.keys())
     
 if __name__ == '__main__':
     init_db()

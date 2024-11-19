@@ -2,44 +2,28 @@ version: "3.8"
 services:
   postgres:
     image: postgres:17-alpine
-    restart: always
+    restart: unless-stopped
     env_file:
       - postgres.env
-    environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-      POSTGRES_SUPER_USER_PASSWORD_FILE: /run/secrets/postgres_super_user_password
-      POSTGRES_READONLY_USER_PASSWORD_FILE: /run/secrets/postgres_readonly_user_password
-    secrets:
-      - postgres_password
-      - postgres_super_user_password
-      - postgres_readonly_user_password
+      - secrets.env
     ports:
       - "5434:5432"
     volumes:
       - ./postgres_volume:/var/lib/postgresql/data
       - ./init_scripts:/docker-entrypoint-initdb.d
-  pgadmin:
-    image: dpage/pgadmin4
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: stress.energetic@d4g.com
-      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin_default_password
-    secrets:
-      - pgadmin_default_password
-    ports:
-      - "8880:80"
-    depends_on:
-      - postgres
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: stress.energetic@d4g.com
+  #     PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin_default_password
+  #   secrets:
+  #     - pgadmin_default_password
+  #   ports:
+  #     - "8880:80"
+  #   depends_on:
+  #     - postgres
 
-secrets:
-  postgres_password:
-    external: true
-  postgres_super_user_password:
-    external: true
-  postgres_readonly_user_password:
-    external: true
-  pgadmin_default_password:
-    external: true
 
 volumes:
   db: 
