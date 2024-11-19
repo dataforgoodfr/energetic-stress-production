@@ -18,6 +18,74 @@ tempo_classification = sa.Table(
     sa.Column('our_J_3', tempo_classes, nullable=False),
 )
 
+eco2mix_raw = sa.Table(
+    "eco2mix_raw",
+    metadata,
+    sa.Column("date_heure", sa.DateTime, nullable=False, primary_key=True),
+    sa.Column("consommation", sa.Float),
+    sa.Column("eolien", sa.Float),
+    sa.Column("solaire", sa.Float),
+)
+
+pred_conso_rte = sa.Table(
+    "pred_conso_rte",
+    metadata,
+    sa.Column("date_heure", sa.DateTime, nullable=False, primary_key=True),
+    sa.Column("consommation", sa.Float),
+)
+
+forecast_flux_solaire = sa.Table(
+    "forecast_flux_solaire",
+    metadata,
+    sa.Column("date_heure", sa.DateTime, nullable=False, primary_key=True),
+    sa.Column("departement", sa.String),
+    sa.Column("delta_hours_pred", sa.Float),
+    sa.Column("flux_solaire", sa.Float),
+)
+
+forecast_vent = sa.Table(
+    "forecast_vent",
+    metadata,
+    sa.Column("date_heure", sa.DateTime, nullable=False, primary_key=True),
+    sa.Column("departement", sa.String),
+    sa.Column("delta_hours_pred", sa.Float),
+    sa.Column("vent", sa.Float),
+)
+
+forecast_temperature = sa.Table(
+    "forecast_temperature",
+    metadata,
+    sa.Column("date_heure", sa.DateTime, nullable=False, primary_key=True),
+    sa.Column("departement", sa.String),
+    sa.Column("delta_hours_pred", sa.Float),
+    sa.Column("temperature", sa.Float),
+)
+
+forecast_ENR = sa.Table(
+    "forecast_ENR",
+    metadata,
+    sa.Column("date_heure", sa.DateTime, nullable=False, primary_key=True),
+    sa.Column("departement", sa.String),
+    sa.Column("delta_hours_pred", sa.Float),
+    sa.Column("eolien", sa.Float),
+    sa.Column("solaire", sa.Float),
+)
+
+prep_prediction_tempo = sa.Table(
+    "prep_prediction_tempo",
+    metadata,
+    sa.Column("date", sa.Date, nullable=False, primary_key=True),
+    sa.Column("temperature", sa.Float),
+    sa.Column("eolien", sa.Float),
+    sa.Column("solaire", sa.Float),
+    sa.Column("consommation", sa.Float),
+    sa.Column("production_nette", sa.Float),
+    sa.Column("production_nette_q40", sa.Float),
+    sa.Column("production_nette_q80", sa.Float),
+    sa.Column("mean_temp_q30", sa.Float),
+    sa.Column("jour_tempo", sa.String),
+)
+
 def init_db():
     engine = sa.create_engine(URL_DB)
     metadata.create_all(engine)
