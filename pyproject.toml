@@ -42,6 +42,7 @@ dependencies = [
   "bokeh>=3.4",
   "joblib",
   "python-dotenv",
+  "sqlalchemy>=2.0.36",
 ]
 
 [project.urls]
