@@ -2,7 +2,7 @@
 import csv
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from energy_forecast.enrergy_forcast_django.energy_forcast_django.app.models import TempoClassification
+from energy_forecast.energy_forcast_django.energy_forcast_django.app.models import TempoClassification
 from energy_forecast import ROOT_DIR
 
 class Command(BaseCommand):
