@@ -15,9 +15,9 @@ class Prediction(models.Model):
         EOLIEN = "Point de prediction eolien"
         SOLAIR = "Point de prediction solair"
 
-    label = models.CharField(choices=TypeDeProduction)
+    label = models.CharField(choices=TypeDeProduction, verbose_name="Type de production", max_length=30)
     date = models.DateTimeField(
-        default=django.utils.timezone.now(),
+        default=django.utils.timezone.now,
         blank=False,
         verbose_name="Date pour laquelle cette prediction est faite."
     )
@@ -33,11 +33,11 @@ class TempoClassification(models.Model):
         WHITE = "WHITE"
 
     date = models.DateTimeField(
-        default=django.utils.timezone.now(),
+        default=django.utils.timezone.now,
         blank=False,
         verbose_name="Date pour laquelle cette classification est faite."
     )
-    by_RTE = models.CharField(choices=TypeDeJour, verbose_name="Classification par RTE")
-    ours_J_1 = models.CharField(choices=TypeDeJour, verbose_name="Notre classification J-1")
-    ours_J_2 = models.CharField(choices=TypeDeJour, verbose_name="Notre classification J-2")
-    ours_J_3 = models.CharField(choices=TypeDeJour, verbose_name="Notre classification J-3")
+    by_RTE = models.CharField(choices=TypeDeJour, verbose_name="Classification par RTE", max_length=5)
+    ours_J_1 = models.CharField(choices=TypeDeJour, verbose_name="Notre classification J-1", max_length=5)
+    ours_J_2 = models.CharField(choices=TypeDeJour, verbose_name="Notre classification J-2", max_length=5)
+    ours_J_3 = models.CharField(choices=TypeDeJour, verbose_name="Notre classification J-3", max_length=5)
