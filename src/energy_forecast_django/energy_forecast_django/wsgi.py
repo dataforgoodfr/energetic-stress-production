@@ -1,5 +1,5 @@
 """
-WSGI config for energy_forcast_django project.
+WSGI config for energy_forecast_django project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'energy_forcast_django.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'energy_forecast_django.settings')
 
 application = get_wsgi_application()

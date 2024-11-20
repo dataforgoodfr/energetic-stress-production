@@ -42,7 +42,7 @@ dependencies = [
   "bokeh>=3.4",
   "joblib",
   "python-dotenv",
-  "django==5.1.2",
+  
 ]
 
 [project.urls]
@@ -91,8 +91,21 @@ extra-dependencies = [
 [tool.hatch.envs.serve.scripts]
 prod = "streamlit run --server.port 8502 --browser.gatherUsageStats false --server.runOnSave true --server.baseUrlPath energy_forecast  src/energy_forecast/dashboard/Accueil.py"
 
+[tool.hatch.envs.django]
+extra-dependencies = [
+  "django==5.1.2",
+  "django-q",
+]
+installer = "uv"
+[tool.hatch.envs.django.scripts]
+migrate = "python src/energy_forecast_django/manage.py migrate"
+makemigrations = "python src/energy_forecast_django/manage.py makemigrations"
+createsuperuser = "python src/energy_forecast_django/manage.py createsuperuser"
+runserver = "python src/energy_forecast_django/manage.py runserver"
+load_initial_data = "python src/energy_forecast_django/manage.py loaddata src/energy_forecast_django/fixtures/initial_data.json"
+
 [tool.coverage.run]
-source_pkgs = ["energy_forecast", "tests"]
+source_pkgs = ["energy_forecast", "energy_forecast_django", "tests"]
 branch = true
 parallel = true
 omit = [
@@ -101,6 +114,7 @@ omit = [
 
 [tool.coverage.paths]
 energy_forecast = ["src/energy_forecast", "*/energy-forecast/src/energy_forecast"]
+energy_forecast_django = ["src/energy_forecast_django", "*/energy-forecast/src/energy_forecast_django"]
 tests = ["tests", "*/energy-forecast/tests"]
 
 [tool.coverage.report]
