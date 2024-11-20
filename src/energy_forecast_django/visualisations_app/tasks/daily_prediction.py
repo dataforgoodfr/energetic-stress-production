@@ -210,11 +210,16 @@ def write_pred(data):
             }
         )
     logger.info("Predictions saved to database")
+    return True
 
-def main():
+def run_tempo_prediction():
     """
     TODO: change predictions values from 'prediction_blue' to 'BLUE' to match RTE syntax ?
     """
+    from django.utils import timezone
+
+    TODAY = timezone.now().date()
+
     logger.info("Starting the prediction")
     data = get_all_data()
     data = generate_features(data)
@@ -234,7 +239,7 @@ def schedule_tempo_predictions():
     from django_q.models import Schedule
 
     schedule(
-        'visualisations_app.tasks.main',
+        'visualisations_app.tasks.daily_prediction.run_tempo_prediction',
         name='tempo_predictions',
         schedule_type=Schedule.DAILY,
         repeats=-1  # Repeat forever
@@ -242,4 +247,4 @@ def schedule_tempo_predictions():
 
 if __name__ == "__main__":
     logger.info(f"{TODAY=}")
-    main()
+    run_tempo_prediction()
