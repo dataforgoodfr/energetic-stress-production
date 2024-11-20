@@ -93,8 +93,9 @@ prod = "streamlit run --server.port 8502 --browser.gatherUsageStats false --serv
 
 [tool.hatch.envs.django]
 extra-dependencies = [
-  "django==5.1.2",
+  "django>=4.2,<5.0",  # Pin to Django 4.2 LTS
   "django-q",
+  "setuptools", # Required for Django-q
 ]
 installer = "uv"
 [tool.hatch.envs.django.scripts]
@@ -103,6 +104,7 @@ makemigrations = "python src/energy_forecast_django/manage.py makemigrations"
 createsuperuser = "python src/energy_forecast_django/manage.py createsuperuser"
 runserver = "python src/energy_forecast_django/manage.py runserver"
 load_initial_data = "python src/energy_forecast_django/manage.py loaddata src/energy_forecast_django/fixtures/initial_data.json"
+collectstatic = "python src/energy_forecast_django/manage.py collectstatic"
 
 [tool.coverage.run]
 source_pkgs = ["energy_forecast", "energy_forecast_django", "tests"]
