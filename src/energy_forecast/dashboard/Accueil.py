@@ -38,9 +38,9 @@ map_rte_signal_to_text = {
     np.nan: "Inconnu",
 }
 map_our_signal_to_text = {
-    "prediction_blanc": "Blanc",
-    "prediction_rouge": "Rouge",
-    "prediction_bleu": "Bleu",
+    "WHITE": "Blanc",
+    "RED": "Rouge",
+    "BLUE": "Bleu",
     np.nan: "Non calculée",
 }
 

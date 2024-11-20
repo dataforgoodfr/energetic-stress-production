@@ -174,9 +174,9 @@ class TempoPredictor:
         prediction_blanc[self.data["stock_blanc"] < 0] = False
 
         predictions = pd.DataFrame({
-            "prediction_rouge": self.prediction_rouge,
-            "prediction_blanc": prediction_blanc,
-            "prediction_bleu": ~(self.prediction_rouge | prediction_blanc)
+            "RED": self.prediction_rouge,
+            "WHITE": prediction_blanc,
+            "BLUE": ~(self.prediction_rouge | prediction_blanc)
         })
         return predictions
 
