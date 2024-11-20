@@ -204,10 +204,11 @@ def write_pred(data):
     logger.info("Writting predictions")
     data = pred_to_correct_column(data)
     data.index = data.index.date
+    data.index.name = "date"
     try:
         previous_pred = pd.read_csv(gold_dir / "our_tempo_prediction.csv", index_col=0)
         previous_pred.index = pd.to_datetime(previous_pred.index).date
-        if previous_pred.shape[0] != data.shape[0]:
+        if True : # previous_pred.shape[0] != data.shape[0]:
             logger.info("Merging current predictions with historical ones.")
             combined_data = data.combine_first(previous_pred)
             combined_data.to_csv(gold_dir / "our_tempo_prediction.csv")
