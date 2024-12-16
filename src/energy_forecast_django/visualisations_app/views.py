@@ -20,8 +20,8 @@ try:
 except locale.Error:
     logger.warning("Could not set locale to fr_FR.UTF-8")
 
-gold_dir = ROOT_DIR / "data" / "gold"
-tempo_prediction_file = gold_dir / "our_tempo_prediction.csv"
+# gold_dir = ROOT_DIR / "data" / "gold"
+# tempo_prediction_file = gold_dir / "our_tempo_prediction.csv"
 
 background_colors = {
     "Blanc": "white",

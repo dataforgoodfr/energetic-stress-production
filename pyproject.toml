@@ -32,6 +32,7 @@ dependencies = [
   "watchfiles",
   "scikit-learn",
   "matplotlib",
+  "plotly",
   "eccodes",
   "cfgrib",
   "requests",

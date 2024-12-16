@@ -17,7 +17,7 @@ from energy_forecast.meteo import (
 )
 from energy_forecast.performances import expires_after, memory
 from energy_forecast.tempo_rte import TempoPredictor, TempoSignalAPI
-from visualisations_app.models import TempoClassification, Eco2MixObservation, PredictedConsumption, Prediction
+from ..models import TempoClassification, Eco2MixObservation, PredictedConsumption, Prediction
 
 logger = logging.getLogger(__name__)
 TODAY = pd.Timestamp.now().date()
@@ -31,7 +31,7 @@ if not gold_dir.exists():
 def fetch_history_data() -> pd.DataFrame:
     """Return the history data from the eco2mix API.
 
-    WARNING : the API is not very reliable and the data is not always returend.
+    WARNING : the API is not very reliable and the data is not always returned.
     TODO : add validation to check if the data is returned.
     """
     now = pd.Timestamp.now()
@@ -40,7 +40,7 @@ def fetch_history_data() -> pd.DataFrame:
     if last_entry:
         start = last_entry.at_instant
         
-    else :
+    else:
         start = one_year_ago
         
     ecomix_data = get_eco2mix_data(start=start, end=now)[["consommation", "eolien", "solaire"]]

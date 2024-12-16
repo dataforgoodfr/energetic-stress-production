@@ -1,3 +1,6 @@
+import plotly.express as px
+import plotly
+import pandas as pd
 import django.utils.timezone
 from django.db import models
 
@@ -6,27 +9,6 @@ from django.db import models
     
     Voir https://docs.djangoproject.com/en/5.1/topics/db/models/
 """
-
-class Prediction(models.Model):
-    """Point de donnée issue d'une prediction."""
-    
-    class TypeDeProduction(models.TextChoices):
-        """Label des type de prediction."""
-        EOLIEN = "Point de prediction eolien"
-        SOLAIR = "Point de prediction solair"
-
-    label = models.CharField(choices=TypeDeProduction.choices, verbose_name="Type de production", max_length=30)
-    forecasted_for = models.DateTimeField(
-        default=django.utils.timezone.now,
-        blank=False,
-        verbose_name="Date pour laquelle cette prediction est faite."
-    )
-    predicted_at = models.DateTimeField(
-        default=django.utils.timezone.now,
-        blank=False,
-        verbose_name="Date de calcul de la prediction."
-    )
-    valeur = models.FloatField(verbose_name="""Valeur de la prediction.""", default=None, null=True)
 
 class TempoClassification(models.Model):
     """Point de donnée issue d'une classification tempo."""
@@ -53,7 +35,7 @@ class Eco2MixObservation(models.Model):
         default=django.utils.timezone.now,
         blank=False,
         verbose_name="Date pour laquelle cette observation est faite."
-    )
+   )
     consommation = models.FloatField(verbose_name="Consommation en MW", default=None, null=True)
     eolien = models.FloatField(verbose_name="Production éolienne en MW", default=None, null=True)
     solaire = models.FloatField(verbose_name="Production solaire en MW", default=None, null=True)
@@ -77,4 +59,31 @@ class PredictedConsumption(models.Model):
         blank=False,
         verbose_name="Date de récupération de la prediction."
     )
-    predicted_consumption = models.FloatField(verbose_name="Valeur de la prediction de la consommation nationale (MW)", default=None, null=True)
+    predicted_consumption = models.FloatField(
+        verbose_name="Valeur de la prediction de la consommation nationale (MW)", default=None, null=True
+    )
+
+def generate_graph(
+        prediction_model: models.Model,
+        x_feature: str,x_label: str,
+        y_feature: str|None, y_label: str|None,
+        figure_function: plotly.graph_objs._figure
+):
+    x_values: list[float | None] = list(
+        prediction_model.objects.values_list(x_feature, flat=True)
+    )
+    y_values: list[django.utils.timezone.datetime | None] = list(
+        prediction_model.objects.values_list(y_feature, flat=True)
+    )
+    data = pd.DataFrame(
+        {x_label: x_values, y_label: y_values}
+    )
+    if figure_function not in [px.bar, px.scatter]:
+        AttributeError("plot_type can only be bar or scatter")
+    return figure_function(
+        data_frame=data, x=x_label, y=y_label
+    )
+
+def style_graph(figure: plotly.graph_objs._figure.Figure)->str:
+    #TODO Add styling parameters to reproduce the graphs currently used
+    return plotly.offline.plot(figure, output_type="div")
