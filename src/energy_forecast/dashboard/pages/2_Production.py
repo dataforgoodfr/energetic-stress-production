@@ -75,7 +75,8 @@ def compute_energy(date:str):
     offset_days = 5
     history_start = pd.Timestamp(date) - pd.Timedelta(f"{offset_days} days")
     energy = energy[history_start:]
-    energy.index = energy.index.tz_localize("Europe/Paris").tz_convert("UTC").tz_localize(None)
+    energy.index = energy.index.tz_localize("Europe/Paris", ambiguous="NaT").tz_convert("UTC").tz_localize(None)
+    energy = energy[~energy.index.duplicated(keep="first")]
     energy = pd.concat([
         energy,
         predictions.rename(columns={"sun": "PV Prediction",
@@ -86,43 +87,43 @@ def compute_energy(date:str):
 
 if __name__ == "__main__":
 
-    date_input = st.sidebar.date_input("Date", pd.Timestamp.now())
+    # date_input = st.sidebar.date_input("Date", pd.Timestamp.now())
 
     # date = pd.Timestamp.now().strftime("%Y-%m-%d")
-    energy = compute_energy(date_input)
+    # energy = compute_energy(date_input)
     # keep only full hours, needed to plot the data without empty spaces
-    print(energy)
-    energy = energy[energy["time"].dt.minute == 0]
+    # print(energy)
+    # energy = energy[energy["time"].dt.minute == 0]
 
     st.title("Prévision de production ENR")
     st.markdown("Cette page affiche les prévisions de production d'énergie renouvelable pour la date sélectionnée."
                 " Les données sont obtenues à partir de [RTE](https://www.rte-france.com/eco2mix/la-production-delectricite-en-temps-reel).")
 
+    st.markdown("## PAGE EN CONSTRUCTION")
+    #energy_long = energy.melt(id_vars="time", var_name="source", value_name="power")
+    #eolen_long = energy_long[energy_long["source"].str.contains("Eolien")]
+    #pv_long = energy_long[energy_long["source"].str.contains("PV")]
 
-    energy_long = energy.melt(id_vars="time", var_name="source", value_name="power")
-    eolen_long = energy_long[energy_long["source"].str.contains("Eolien")]
-    pv_long = energy_long[energy_long["source"].str.contains("PV")]
+    #eolen_title = alt.Title("Production Eolien",
+    #                        subtitle="Production historique et prévisionnelle")
 
-    eolen_title = alt.Title("Production Eolien",
-                            subtitle="Production historique et prévisionnelle")
+    #eolen_chart = alt.Chart(eolen_long, title=eolen_title).mark_line().encode(
+    #    x=alt.X("time:T", title="Date"),
+    #    y=alt.Y("power:Q", title="Production (MW)"),
+    #    color=alt.Color("source:N", title="Type de production"),
+    #)
 
-    eolen_chart = alt.Chart(eolen_long, title=eolen_title).mark_line().encode(
-        x=alt.X("time:T", title="Date"),
-        y=alt.Y("power:Q", title="Production (MW)"),
-        color=alt.Color("source:N", title="Type de production"),
-    )
+    #st.altair_chart(eolen_chart,
+    #                use_container_width=True
+    #            )
 
-    st.altair_chart(eolen_chart,
-                    use_container_width=True
-                )
-
-    sun_title = alt.Title("Production Solaire",
-                          subtitle="Production historique et prévisionnelle")
-    sun_chart = alt.Chart(pv_long, title=sun_title).mark_line().encode(
-        x=alt.X("time:T", title="Date"),
-        y=alt.Y("power:Q", title="Production (MW)"),
-        color=alt.Color("source:N", title="Type de production"),
-    )
-    st.altair_chart(sun_chart,
-                    use_container_width=True
-                )
+    #sun_title = alt.Title("Production Solaire",
+    #                      subtitle="Production historique et prévisionnelle")
+    #sun_chart = alt.Chart(pv_long, title=sun_title).mark_line().encode(
+    #    x=alt.X("time:T", title="Date"),
+    #    y=alt.Y("power:Q", title="Production (MW)"),
+    #    color=alt.Color("source:N", title="Type de production"),
+    #)
+    #st.altair_chart(sun_chart,
+    #                use_container_width=True
+    #            )

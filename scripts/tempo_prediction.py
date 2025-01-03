@@ -126,7 +126,7 @@ def get_all_data():
     logger.info("Fetching the temperature")
     daily_temperature = fetch_temperature()
     logger.info("Fetching the tempo signal")
-    tempos = get_history_tempo_days()
+    tempos = get_history_tempo_days().replace({"BLUE": "BLEU", "WHITE": "BLANC", "RED": "ROUGE"})
     logger.info("Merging all the data")
 
     prediction_data = pd.concat([consumption_forecast.resample("h").mean(), our_enr_forecast], axis=1).dropna()
@@ -162,6 +162,7 @@ def generate_features(data, inplace=False):
     data["mean_temp_q30"] = (
         data["temperature"].ffill().rolling(365, center=False).aggregate(lambda x: x.quantile(0.3)).bfill().ffill()
     )
+    data.index = pd.to_datetime(data.index)
     return data
 
 
@@ -207,7 +208,7 @@ def write_pred(data):
     try:
         previous_pred = pd.read_csv(gold_dir / "our_tempo_prediction.csv", index_col=0)
         previous_pred.index = pd.to_datetime(previous_pred.index).date
-        if previous_pred.shape[0] != data.shape[0]:
+        if True : # previous_pred.shape[0] != data.shape[0]:
             logger.info("Merging current predictions with historical ones.")
             combined_data = data.combine_first(previous_pred)
             combined_data.to_csv(gold_dir / "our_tempo_prediction.csv")

@@ -24,17 +24,31 @@ background_colors = {
     "Rouge": "red",
     "Bleu": "blue",
     "Inconnu": "silver",
+    "Non calculée": "silver",
 }
+border_colors = {
+    "Blanc": "gray",
+    "Rouge": "white",
+    "Bleu": "white",
+    "Inconnu": "gray",
+    "Non calculée": "gray",
+}
+
 text_colors = {
     "Blanc": "black",
     "Rouge": "white",
     "Bleu": "white",
+    "Inconnu": "black",
+    "Non calculée": "black",
 }
 
 map_rte_signal_to_text = {
     "WHITE": "Blanc",
+    "BLANC": "Blanc",
     "RED": "Rouge",
+    "ROUGE": "Rouge",
     "BLUE": "Bleu",
+    "BLEU": "Bleu",
     np.nan: "Inconnu",
 }
 map_our_signal_to_text = {
@@ -57,9 +71,52 @@ if __name__ == "__main__":
     predictions.index = pd.to_datetime(predictions.index, utc=True)
     len_predictions = len(predictions)
     cols = st.columns(len_predictions)
+    for i, (date, row) in enumerate(predictions.iterrows()):
+        with cols[i]:
+            if i == 0:
+                st.markdown(
+                f"""
+                <div style="background-color: {background_colors[map_rte_signal_to_text[row['Type_de_jour_TEMPO']]]}; padding: 10px; border-radius: 5px; border: 2px solid {border_colors[map_rte_signal_to_text[row['Type_de_jour_TEMPO']]]};">
+                    <h4 style="color: {text_colors[map_rte_signal_to_text[row['Type_de_jour_TEMPO']]]};">{date.strftime('%a %d %B')}</h4>
+                    <p style="color: {text_colors[map_rte_signal_to_text[row['Type_de_jour_TEMPO']]]};">Prévision à J-1: {map_our_signal_to_text[row['our_tempo_J-1']]}</p>
+                    <p style="color: {text_colors[map_rte_signal_to_text[row['Type_de_jour_TEMPO']]]};">Valeur réelle: {map_rte_signal_to_text[row['Type_de_jour_TEMPO']]}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+                )
+            if i == 1:
+                st.markdown(
+                    f"""
+                    <div style="background-color: {background_colors[map_our_signal_to_text[row['our_tempo_J-1']]]}; padding: 10px; border-radius: 5px; border: 2px solid {border_colors[map_our_signal_to_text[row['our_tempo_J-1']]]};">
+                    <h4 style="color: {text_colors[map_our_signal_to_text[row['our_tempo_J-1']]]};">{date.strftime('%a %d %B')}</h4>
+                    <p style="color: {text_colors[map_our_signal_to_text[row['our_tempo_J-1']]]};">Prévision à J-1: {map_our_signal_to_text[row['our_tempo_J-1']]}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            elif i == 2:
+                st.markdown(
+                    f"""
+                    <div style="background-color: {background_colors[map_our_signal_to_text[row['our_tempo_J-2']]]}; padding: 10px; border-radius: 5px; border: 2px solid {border_colors[map_our_signal_to_text[row['our_tempo_J-2']]]};">
+                    <h4 style="color: {text_colors[map_our_signal_to_text[row['our_tempo_J-2']]]};">{date.strftime('%a %d %B')}</h4>
+                    <p style="color: {text_colors[map_our_signal_to_text[row['our_tempo_J-2']]]};">Prévision à J-2: {map_our_signal_to_text[row['our_tempo_J-2']]}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            elif i == 3:
+                st.markdown(
+                    f"""
+                    <div style="background-color: {background_colors[map_our_signal_to_text[row['our_tempo_J-3']]]}; padding: 10px; border-radius: 5px; border: 2px solid {border_colors[map_our_signal_to_text[row['our_tempo_J-3']]]};">
+                    <h4 style="color: {text_colors[map_our_signal_to_text[row['our_tempo_J-3']]]};">{date.strftime('%a %d %B')}</h4>
+                    <p style="color: {text_colors[map_our_signal_to_text[row['our_tempo_J-3']]]};">Prévision à J-3: {map_our_signal_to_text[row['our_tempo_J-3']]}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+    st.write("### Tableau détaillé des prévisions et des valeurs réelles\n"
+    "Ce tableau présente toutes nos prévisions réalisées pour les jours futures")
 
-    # Create a table with two rows: one for our predictions and one for the true values
-    st.write("### Tableau des prévisions et des valeurs réelles")
 
     # Create a DataFrame to hold the data for the table
     table_data = {
