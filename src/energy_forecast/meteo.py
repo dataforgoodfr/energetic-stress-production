@@ -586,7 +586,7 @@ def download_observations(url, filename):
         f.write(response.content)
 
 def download_observations_all_departments(cache_duration="12h",
-                                          file_type="latest-2023-2024_RR-T-Vent",
+                                          file_type="latest-2024-2025_RR-T-Vent",
                                           verbose=False):
     """Download the temperature for each department of France."""
     url_template = "https://object.files.data.gouv.fr/meteofrance/data/synchro_ftp/BASE/QUOT/Q_{DEP_ID:0>2}_{file_type}.csv.gz"

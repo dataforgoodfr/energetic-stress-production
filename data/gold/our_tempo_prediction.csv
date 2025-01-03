@@ -120,7 +120,10 @@
 2024-12-28,BLANC,prediction_bleu,,prediction_blanc
 2024-12-29,BLEU,prediction_bleu,prediction_bleu,
 2024-12-30,ROUGE,prediction_bleu,prediction_rouge,prediction_rouge
-2024-12-31,BLANC,prediction_rouge,prediction_blanc,prediction_blanc
-2025-01-01,,prediction_bleu,prediction_bleu,prediction_bleu
-2025-01-02,,,prediction_rouge,prediction_rouge
-2025-01-03,,,,prediction_rouge
+2024-12-31,BLANC,prediction_bleu,prediction_blanc,prediction_blanc
+2025-01-01,BLEU,prediction_bleu,prediction_bleu,prediction_bleu
+2025-01-02,ROUGE,prediction_bleu,prediction_rouge,prediction_rouge
+2025-01-03,ROUGE,prediction_bleu,,prediction_rouge
+2025-01-04,,prediction_bleu,,
+2025-01-05,,,prediction_bleu,
+2025-01-06,,,,prediction_bleu

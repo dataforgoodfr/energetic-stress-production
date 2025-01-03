@@ -45,6 +45,7 @@ def fetch_history_data() -> pd.DataFrame:
     TODO : add validation to check if the data is returned.
     """
     one_year_ago = TODAY - pd.DateOffset(years=1) - pd.DateOffset(month=9, day=1)
+    print(one_year_ago)
     ecomix_data = get_eco2mix_data(start=one_year_ago, end=TODAY)[["consommation", "eolien", "solaire"]]
     ecomix_data_no_duplicates = ecomix_data[~ecomix_data.index.duplicated()]
     return ecomix_data_no_duplicates
@@ -170,6 +171,8 @@ def get_history_tempo_days():
     """Get the tempo signal since the start of the tempo year."""
     client = TempoSignalAPI()
     start_date = TODAY - pd.DateOffset(day=1, month=9)
+    if start_date.date() >= TODAY:
+        start_date -= pd.DateOffset(years=1)
     after_tomorrow = TODAY + pd.DateOffset(days=2)
     history_tempo = client.get_data(start_date=start_date, end_date=after_tomorrow).sort_index(ascending=True)
     return history_tempo
@@ -230,6 +233,8 @@ def main():
     data = get_all_data()
     data = generate_features(data)
     first_day_of_tempo = (TODAY - pd.DateOffset(month=9, day=1)).tz_localize("Europe/Paris")
+    if first_day_of_tempo.date() >= TODAY:
+        first_day_of_tempo -= pd.DateOffset(years=1)
     predictor = TempoPredictor(data[first_day_of_tempo:].copy())
     tempo_dummies = predictor.predict()
     our_tempo = pd.from_dummies(tempo_dummies).tz_convert("Europe/Paris").tz_localize(None)
