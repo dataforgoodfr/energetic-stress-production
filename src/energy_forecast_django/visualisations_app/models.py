@@ -29,6 +29,10 @@ class TempoClassification(models.Model):
     ours_J_2 = models.CharField(choices=TypeDeJour.choices, verbose_name="Notre classification J-2", max_length=5)
     ours_J_3 = models.CharField(choices=TypeDeJour.choices, verbose_name="Notre classification J-3", max_length=5)
 
+    @property
+    def formatted_date(self) -> str:
+        return self.date.strftime("%a %d %B %Y")
+
 class Eco2MixObservation(models.Model):
     """Storages the data from the Eco2Mix API."""
     at_instant = models.DateTimeField(
