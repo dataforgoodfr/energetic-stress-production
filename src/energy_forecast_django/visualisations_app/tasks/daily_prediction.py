@@ -1,12 +1,3 @@
-#! /usr/bin/env python3
-"""This script does all the needed steps to predict the tempo class.
-
-Usage
------
-with hatch:
->>> hatch run tempo_prediction
-
-"""
 
 import logging
 
@@ -26,6 +17,7 @@ from energy_forecast.meteo import (
 )
 from energy_forecast.performances import expires_after, memory
 from energy_forecast.tempo_rte import TempoPredictor, TempoSignalAPI
+from ..models import TempoClassification, Eco2MixObservation, PredictedConsumption, Prediction
 
 logger = logging.getLogger(__name__)
 TODAY = pd.Timestamp.now().date()
@@ -36,17 +28,35 @@ gold_dir = ROOT_DIR / "data" / "gold"
 if not gold_dir.exists():
     gold_dir.mkdir()
 
-
-@memory.cache(cache_validation_callback=expires_after(hours=2))
 def fetch_history_data() -> pd.DataFrame:
     """Return the history data from the eco2mix API.
 
-    WARNING : the API is not very reliable and the data is not always returend.
+    WARNING : the API is not very reliable and the data is not always returned.
     TODO : add validation to check if the data is returned.
     """
-    one_year_ago = TODAY - pd.DateOffset(years=1) - pd.DateOffset(month=9, day=1)
-    ecomix_data = get_eco2mix_data(start=one_year_ago, end=TODAY)[["consommation", "eolien", "solaire"]]
+    now = pd.Timestamp.now()
+    one_year_ago = now.date() - pd.DateOffset(years=1) - pd.DateOffset(month=9, day=1)
+    last_entry = Eco2MixObservation.objects.last()
+    if last_entry:
+        start = last_entry.at_instant
+        
+    else:
+        start = one_year_ago
+        
+    ecomix_data = get_eco2mix_data(start=start, end=now)[["consommation", "eolien", "solaire"]]
     ecomix_data_no_duplicates = ecomix_data[~ecomix_data.index.duplicated()]
+    # upload to database
+    Eco2MixObservation.objects.bulk_create([
+        Eco2MixObservation(
+            at_instant=idx,
+            consommation=row['consommation'],
+            eolien=row['eolien'],
+            solaire=row['solaire']
+        ) for idx, row in ecomix_data_no_duplicates.iterrows()
+    ], ignore_conflicts=True)
+    # load all the needed data from one year ago
+    ecomix_data_no_duplicates_raw = Eco2MixObservation.objects.filter(at_instant__gte=one_year_ago).values()
+    ecomix_data_no_duplicates = pd.DataFrame(ecomix_data_no_duplicates_raw).set_index("at_instant").drop(columns=["id"])
     return ecomix_data_no_duplicates
 
 
@@ -64,9 +74,25 @@ def fetch_ret_consumption_forecast():
     """
 
     client = PredictionForecastAPI()
-
-    consumption_forecast = client.get_weekly_forecast(TODAY, horizon="2d")["predicted_consumption"]
-    return consumption_forecast.rename("consommation")
+    today = pd.Timestamp.now().date()
+    stored_consumtion_forecast = PredictedConsumption.objects.filter(fetched_at__gte=today).values()
+    if stored_consumtion_forecast:
+        fetched_at = stored_consumtion_forecast[0]['fetched_at']
+        if fetched_at.date() == today:
+            return pd.DataFrame(stored_consumtion_forecast).set_index("forecasted_for").drop(columns=["id"])
+    consumption_forecast = client.get_weekly_forecast(today, horizon="2d")
+    consumption_forecast["fetched_at"] = pd.Timestamp.now(tz="UTC")
+    # upload to database
+    for idx, row in consumption_forecast.iterrows():
+        PredictedConsumption.objects.bulk_create([
+            PredictedConsumption(
+                forecasted_for=idx,
+                predicted_at=row['predicted_at'],
+                fetched_at=row['fetched_at'],
+                predicted_consumption=row['predicted_consumption']
+            ) for idx, row in consumption_forecast.iterrows()
+        ], ignore_conflicts=True)
+    return consumption_forecast
 
 
 def fetch_mf_sun_forecast():
@@ -81,9 +107,14 @@ def fetch_mf_wind_forecast():
     return mf_wind_deps
 
 
-@memory.cache(cache_validation_callback=expires_after(hours=2))
 def compute_our_enr_forecast():
     """Predict the renewable energy production."""
+    # look in the database
+    today = pd.Timestamp.now(tz="UTC").floor("D")
+    last_prediction = Prediction.objects.filter(predicted_at__gte=today).values()
+    if last_prediction:
+        return pd.DataFrame(last_prediction).set_index("forecasted_for").drop(columns=["id"])
+    
     # Fetch the forecasts
     sun_forecast = fetch_mf_sun_forecast()
     wind_forecast = fetch_mf_wind_forecast()
@@ -97,7 +128,22 @@ def compute_our_enr_forecast():
         }
     )
     # cleanup
-    # upload to glacier archive
+    our_enr_forecast = our_enr_forecast.dropna()
+    our_enr_forecast.rename(columns={"sun": "SOLAIR", "wind": "EOLIEN"}, inplace=True)
+    long_enr_forecast = our_enr_forecast.melt(var_name="label",
+                                              value_name="valeur",
+                                              ignore_index=False)
+    # upload to database
+    predicted_at = pd.Timestamp.now(tz="UTC")
+    predictions = [
+        Prediction(
+            forecasted_for=idx.tz_localize("UTC"),
+            label=row['label'],
+            valeur=row['valeur'],
+            predicted_at=predicted_at
+        ) for idx, row in long_enr_forecast.iterrows()
+    ]
+    Prediction.objects.bulk_create(predictions, ignore_conflicts=True)
     return our_enr_forecast.tz_localize("UTC")
 
 
@@ -205,27 +251,28 @@ def write_pred(data):
     data = pred_to_correct_column(data)
     data.index = data.index.date
     data.index.name = "date"
-    try:
-        previous_pred = pd.read_csv(gold_dir / "our_tempo_prediction.csv", index_col=0)
-        previous_pred.index = pd.to_datetime(previous_pred.index).date
-        if True : # previous_pred.shape[0] != data.shape[0]:
-            logger.info("Merging current predictions with historical ones.")
-            combined_data = data.combine_first(previous_pred)
-            combined_data.to_csv(gold_dir / "our_tempo_prediction.csv")
-        else:
-            logger.info("Predictions were already calculted.")
-            return
+    # Update or create records
+    for idx, row in data.iterrows():
+        TempoClassification.objects.update_or_create(
+            date=idx,
+            defaults={
+                'by_RTE': row['Type_de_jour_TEMPO'],
+                'ours_J_1': row['our_tempo_J-1'],
+                'ours_J_2': row['our_tempo_J-2'], 
+                'ours_J_3': row['our_tempo_J-3']
+            }
+        )
+    logger.info("Predictions saved to database")
+    return True
 
-    except FileNotFoundError:
-        logger.info("No previous predictions found")
-        data.to_csv(gold_dir / "our_tempo_prediction.csv")
-    logger.info("Prediction done, saved to %s", gold_dir / "our_tempo_prediction.csv")
-
-
-def main():
+def run_tempo_prediction():
     """
     TODO: change predictions values from 'prediction_blue' to 'BLUE' to match RTE syntax ?
     """
+    from django.utils import timezone
+
+    TODAY = timezone.now().date()
+
     logger.info("Starting the prediction")
     data = get_all_data()
     data = generate_features(data)
@@ -239,6 +286,18 @@ def main():
     write_pred(tempo)
 
 
+def schedule_tempo_predictions():
+    """Schedule the Tempo prediction task"""
+    from django_q.tasks import schedule
+    from django_q.models import Schedule
+
+    schedule(
+        'visualisations_app.tasks.daily_prediction.run_tempo_prediction',
+        name='tempo_predictions',
+        schedule_type=Schedule.DAILY,
+        repeats=-1  # Repeat forever
+    )
+
 if __name__ == "__main__":
     logger.info(f"{TODAY=}")
-    main()
+    run_tempo_prediction()
