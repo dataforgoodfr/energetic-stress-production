@@ -44,7 +44,7 @@ def fetch_history_data() -> pd.DataFrame:
     WARNING : the API is not very reliable and the data is not always returend.
     TODO : add validation to check if the data is returned.
     """
-    one_year_ago = TODAY - pd.DateOffset(years=1) - pd.DateOffset(month=9, day=1)
+    one_year_ago = TODAY - pd.DateOffset(years=2) - pd.DateOffset(month=9, day=1)
     print(one_year_ago)
     ecomix_data = get_eco2mix_data(start=one_year_ago, end=TODAY)[["consommation", "eolien", "solaire"]]
     ecomix_data_no_duplicates = ecomix_data[~ecomix_data.index.duplicated()]
@@ -102,7 +102,7 @@ def compute_our_enr_forecast():
     return our_enr_forecast.tz_localize("UTC")
 
 
-@memory.cache(cache_validation_callback=expires_after(hours=2))
+#@memory.cache(cache_validation_callback=expires_after(hours=2))
 def fetch_temperature():
     """Limitation : there only the observed temperature is used.
 
@@ -110,8 +110,7 @@ def fetch_temperature():
     TODO : make sure the last day is complete (the observations are not always available for the current day).
     """
     files = download_observations_all_departments()
-    cut_before = TODAY - pd.DateOffset(years=1) - pd.DateOffset(month=9, day=1)
-    cut_before = TODAY - pd.DateOffset(years=1) - pd.DateOffset(month=9, day=1)
+    cut_before = TODAY - pd.DateOffset(years=2) - pd.DateOffset(month=9, day=1)
     daily_temperature = aggregates_observations(files, cut_before=cut_before).tz_localize("Europe/Paris")
     return daily_temperature
 
@@ -143,7 +142,7 @@ def get_all_data():
         tempos["value"].rename("Type_de_jour_TEMPO"),
         daily_temperature.rename("temperature")
         ],
-                     axis=1)
+                     axis=1).bfill()  # backfill for missing temperatures
     return data
 
 
@@ -232,10 +231,18 @@ def main():
     logger.info("Starting the prediction")
     data = get_all_data()
     data = generate_features(data)
+    
     first_day_of_tempo = (TODAY - pd.DateOffset(month=9, day=1)).tz_localize("Europe/Paris")
     if first_day_of_tempo.date() >= TODAY:
         first_day_of_tempo -= pd.DateOffset(years=1)
-    predictor = TempoPredictor(data[first_day_of_tempo:].copy())
+    selected_data = data[first_day_of_tempo:].copy()
+    print(selected_data)
+    predictor = TempoPredictor(selected_data)
+    import matplotlib.pyplot as plt
+    selected_data["production_norm"].plot()
+    selected_data["seuil_rouge"].plot()
+    selected_data["seuil_blanc_rouge"].plot()
+    plt.savefig("tempo.png")
     tempo_dummies = predictor.predict()
     our_tempo = pd.from_dummies(tempo_dummies).tz_convert("Europe/Paris").tz_localize(None)
     our_tempo.columns = ["our_tempo"]

@@ -157,7 +157,7 @@ class TempoPredictor:
         """
         self.prediction_rouge = self.data[self.production_normed_f] > self.data["seuil_rouge"]
         start_ROUGE_allowed =  (self.prediction_rouge.index[0] + pd.DateOffset(month=10, day=31))  #    "2015-10-31"
-        end_ROUGE_allowed = (self.prediction_rouge.index[-1] + pd.DateOffset(years=1,month=4, day=1) )  #"2016-04-01"
+        end_ROUGE_allowed = (self.prediction_rouge.index[-1] + pd.DateOffset(years=1, month=4, day=1) )  #"2016-04-01"
         self.prediction_rouge[:start_ROUGE_allowed] = False
         self.prediction_rouge[end_ROUGE_allowed:] = False
         self.prediction_rouge[self.data["stock_rouge"] < 0] = False
